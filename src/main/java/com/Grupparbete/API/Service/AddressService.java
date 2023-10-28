@@ -2,14 +2,16 @@ package com.Grupparbete.API.Service;
 
 import com.Grupparbete.API.Entities.Address;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface AddressService {
 
-    Optional<Address> findById(int id);
-
+    List<Address> findAll();
     Address findAddressById(int id);
+    Address updateAddress(int id, Address address);
     Address saveAddress(Address address);
-    Address findAddressByStreetAndPostalCodeAndCity(String street, String postalCode, String city);
-    void deleteAddress(int id);
+    void deleteAddressById(int id);
+    Address findAddressByStreetAndPostalCodeAndCity(String street, int postalCode, String city);
+    Address checkIfExistsInDatabaseIfNotSave(Address address, boolean autoSave);
 }

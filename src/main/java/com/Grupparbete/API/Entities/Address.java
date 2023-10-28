@@ -12,13 +12,13 @@ public class Address {
     @Column(name = "street")
     private String street;
     @Column(name = "postalcode")
-    private int postalcode;
+    private int postalCode;
     @Column(name = "city")
     private String city;
 
     public Address(String street,int postalCode,String city){
         this.street = street;
-        this.postalcode = postalCode;
+        this.postalCode = postalCode;
         this.city = city;
     }
     public Address(){
@@ -41,12 +41,12 @@ public class Address {
         this.street = street;
     }
 
-    public int getPostalcode() {
-        return postalcode;
+    public int getPostalCode() {
+        return postalCode;
     }
 
-    public void setPostalcode(int postalCode) {
-        this.postalcode = postalCode;
+    public void setPostalCode(int postalCode) {
+        this.postalCode = postalCode;
     }
 
     public String getCity() {
@@ -62,7 +62,7 @@ public class Address {
         return "Address{" +
                 "id=" + id +
                 ", street='" + street + '\'' +
-                ", postalCode='" + postalcode + '\'' +
+                ", postalCode='" + postalCode + '\'' +
                 ", city='" + city + '\'' +
                 '}';
     }

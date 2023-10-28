@@ -1,5 +1,6 @@
 package com.Grupparbete.API.Controller;
 
+import com.Grupparbete.API.CurrencyConverter;
 import com.Grupparbete.API.Entities.*;
 import com.Grupparbete.API.Service.*;
 import org.apache.logging.log4j.LogManager;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,7 +47,7 @@ public class AdminController {
         if (addressOptional.isPresent()) {
             Address address = addressOptional.get();
             s.getAddress().setCity(address.getCity());
-            s.getAddress().setPostalcode(address.getPostalcode());
+            s.getAddress().setPostalCode(address.getPostalCode());
             s.getAddress().setStreet(address.getStreet());
         }
         Customer customer = cinemaCustomerService.saveCustomer(s);
@@ -120,7 +122,7 @@ public class AdminController {
 
         Address existingAddress = addressService.findAddressByStreetAndPostalCodeAndCity(
                 newCustomer.getAddress().getStreet(),
-                newCustomer.getAddress().getPostalcode(),
+                newCustomer.getAddress().getPostalCode(),
                 newCustomer.getAddress().getCity()
         );
 
@@ -130,7 +132,7 @@ public class AdminController {
 
         Address customerAddress = addressService.findAddressByStreetAndPostalCodeAndCity(
                 newCustomer.getAddress().getStreet(),
-                newCustomer.getAddress().getPostalcode(),
+                newCustomer.getAddress().getPostalCode(),
                 newCustomer.getAddress().getCity()
         );
 
@@ -161,7 +163,7 @@ public class AdminController {
         List<Customer> remainingCustomersWithSameAddress = sushiCustomerService.findCustomersByAddressId(addressId);
 
         if (remainingCustomersWithSameAddress.isEmpty()) {
-            addressService.deleteAddress(addressId);
+            addressService.deleteAddressById(addressId);
         }
 
         logger.info("Admin deleted customer with ID: " + id);
@@ -185,14 +187,14 @@ public class AdminController {
 
         if (existingAddress != null && !existingAddress.equals(updatedAddress)) {
             Address matchingAddress = addressService.findAddressByStreetAndPostalCodeAndCity(
-                    updatedAddress.getStreet(), updatedAddress.getPostalcode(), updatedAddress.getCity()
+                    updatedAddress.getStreet(), updatedAddress.getPostalCode(), updatedAddress.getCity()
             );
 
             if (matchingAddress != null) {
                 existingCustomer.setAddress(matchingAddress);
             } else {
                 existingAddress.setStreet(updatedAddress.getStreet());
-                existingAddress.setPostalcode(updatedAddress.getPostalcode());
+                existingAddress.setPostalCode(updatedAddress.getPostalCode());
                 existingAddress.setCity(updatedAddress.getCity());
             }
         } else if (existingAddress == null) {
@@ -205,7 +207,7 @@ public class AdminController {
         if (existingAddress != null) {
             List<Customer> customersWithSameAddress = sushiCustomerService.findCustomersByAddressId(existingAddress.getId());
             if (customersWithSameAddress.size() == 0) {
-                addressService.deleteAddress(existingAddress.getId());
+                addressService.deleteAddressById(existingAddress.getId());
             }
         }
         logger.info("Admin updated customer with ID: " + id);
@@ -238,7 +240,11 @@ public class AdminController {
             Order order = orderDetails.getOrder();
             order.setQuantity(order.getQuantity() - quantity);
             order.setTotalPriceSEK(order.getTotalPriceSEK() - priceSEK);
-            order.setTotalPriceYEN((int)(order.getTotalPriceSEK() * converter.getSEKToYenExchangeRate()));
+            try {
+                order.setTotalPriceYEN((int) CurrencyConverter.SekToRequestedCurrency(order.getTotalPriceSEK(), "JPY"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         List<BookingDetails> bookingDetailsList = bookingService.findBookingDetailsContainingDish(deletedDish);
@@ -250,7 +256,11 @@ public class AdminController {
             CurrencyConverter converter = new CurrencyConverter();
             SushiBooking booking = bookingDetails.getBooking();
             booking.setTotalPriceSEK(booking.getTotalPriceSEK() - priceSEK);
-            booking.setTotalPriceYEN((int)(booking.getTotalPriceSEK() * converter.getSEKToYenExchangeRate()));
+            try {
+                booking.setTotalPriceYEN((int) CurrencyConverter.SekToRequestedCurrency(booking.getTotalPriceSEK(), "JPY"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         dishesService.deleteDish(id);
