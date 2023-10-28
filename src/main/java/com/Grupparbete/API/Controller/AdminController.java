@@ -12,15 +12,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1")
 public class AdminController {
 
     private static final Logger logger = LogManager.getLogger("MyLogger");
-    @Autowired
-    private CustomerServiceImpl cinemaCustomerService;
+//    @Autowired
+//    private CustomerServiceImpl cinemaCustomerService;
 
     @Autowired
     private MovieServiceImpl movieService;
@@ -31,49 +30,184 @@ public class AdminController {
     @Autowired
     private AddressServiceImpl CinemaAddressService;
 
-    private CustomerService sushiCustomerService;
+    private CustomerService customerService;
     private AddressService addressService;
     private DishesService dishesService;
-    private SushiRoomService addressRoomService;
+    private SushiRoomService sushiRoomService;
     private SushiBookingService bookingService;
     private OrderService orderService;
 
 
-    @PostMapping("/customers")
-    public Customer saveCustomer(@RequestBody Customer s) {
-        logger.info("admin added customer " + s.getName());
-        s.setId(0);
-        Optional<Address> addressOptional = addressService.findById(s.getAddress().getId());
-        if (addressOptional.isPresent()) {
-            Address address = addressOptional.get();
-            s.getAddress().setCity(address.getCity());
-            s.getAddress().setPostalCode(address.getPostalCode());
-            s.getAddress().setStreet(address.getStreet());
-        }
-        Customer customer = cinemaCustomerService.saveCustomer(s);
-        return customer;
+    public AdminController(CustomerService custService, AddressService addService, DishesService dishService, SushiRoomService rooService, SushiBookingService bookService, OrderService ordService){
+        customerService = custService;
+        addressService = addService;
+        dishesService = dishService;
+        sushiRoomService = rooService;
+        bookingService = bookService;
+        orderService = ordService;
     }
-
 
     @GetMapping("/customers")
-    public List<Customer> getAllCustomers() {
-        return cinemaCustomerService.findAllCustomers();
+    public List<Customer> findAllCustomers() {
+        return customerService.findAllCustomers();
     }
 
+//    @GetMapping("/customers")
+//    public List<Customer> getAllCustomers() {
+//        return customerService.findAllCustomers();
+//    }
+
+
+//    @PostMapping("/customers")
+//    public Customer saveCustomer(@RequestBody Customer s) {
+//        logger.info("admin added customer " + s.getName());
+//        s.setId(0);
+//        Optional<Address> addressOptional = addressService.findAddressById(s.getAddress().getId());
+//        if (addressOptional.isPresent()) {
+//            Address address = addressOptional.get();
+//            s.getAddress().setCity(address.getCity());
+//            s.getAddress().setPostalCode(address.getPostalCode());
+//            s.getAddress().setStreet(address.getStreet());
+//        }
+//        Customer customer = customerService.saveCustomer(s);
+//        return customer;
+//    }
+
+    //    @PostMapping("/customers")
+//    public Customer addCustomer(@RequestBody Customer newCustomer) {
+//
+//        Address existingAddress = addressService.findAddressByStreetAndPostalCodeAndCity(
+//                newCustomer.getAddress().getStreet(),
+//                newCustomer.getAddress().getPostalCode(),
+//                newCustomer.getAddress().getCity()
+//        );
+//
+//        if (existingAddress == null) {
+//            addressService.saveAddress(newCustomer.getAddress());
+//        }
+//
+//        Address customerAddress = addressService.findAddressByStreetAndPostalCodeAndCity(
+//                newCustomer.getAddress().getStreet(),
+//                newCustomer.getAddress().getPostalCode(),
+//                newCustomer.getAddress().getCity()
+//        );
+//
+//        newCustomer.setAddress(customerAddress);
+//
+//        Customer savedCustomer = customerService.saveCustomer(newCustomer);
+//        int customerID = savedCustomer.getId();
+//
+//        logger.info("Admin added a new customer with ID: " + customerID);
+//
+//        return savedCustomer;
+//    }
+
+    //Tobbe
+    @PutMapping("/customers/{id}")
+    public Customer updateCustomer(@PathVariable int id, @RequestBody Customer customer){
+        return customerService.updateCustomer(id, customer);
+    }
+
+//    @PutMapping("/customers/{id}")
+//    public ResponseEntity<String> updateCustomer(@RequestBody Customer updatedCustomer, @PathVariable int id) {
+//        Customer existingCustomer = customerService.findCustomerById(id);
+//        if (existingCustomer == null) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body("Kund med ID: " + id + " finns inte");
+//        }
+//
+//        existingCustomer.setUsername(updatedCustomer.getUsername());
+//        existingCustomer.setName(updatedCustomer.getName());
+//
+//        Address updatedAddress = updatedCustomer.getAddress();
+//        Address existingAddress = existingCustomer.getAddress();
+//
+//        if (existingAddress != null && !existingAddress.equals(updatedAddress)) {
+//            Address matchingAddress = addressService.findAddressByStreetAndPostalCodeAndCity(
+//                    updatedAddress.getStreet(), updatedAddress.getPostalCode(), updatedAddress.getCity()
+//            );
+//
+//            if (matchingAddress != null) {
+//                existingCustomer.setAddress(matchingAddress);
+//            } else {
+//                existingAddress.setStreet(updatedAddress.getStreet());
+//                existingAddress.setPostalCode(updatedAddress.getPostalCode());
+//                existingAddress.setCity(updatedAddress.getCity());
+//            }
+//        } else if (existingAddress == null) {
+//            Address newAddress = addressService.saveAddress(updatedAddress);
+//            existingCustomer.setAddress(newAddress);
+//        }
+//
+//        Customer updatedCustomerResult = customerService.saveCustomer(existingCustomer);
+//
+//        if (existingAddress != null) {
+//            List<Customer> customersWithSameAddress = customerService.findCustomersByAddressId(existingAddress.getId());
+//            if (customersWithSameAddress.size() == 0) {
+//                addressService.deleteAddressById(existingAddress.getId());
+//            }
+//        }
+//        logger.info("Admin updated customer with ID: " + id);
+//        return ResponseEntity.ok("Kund med ID: " + id + " har uppdaterats.");
+//    }
+
+    // Tobbe
+    @PostMapping("/customers")
+    public Customer saveCustomer(@RequestBody Customer customer) {
+        if (customer.getCustomerId() > 0){
+            customer.setCustomerId(0);
+        }
+        return customerService.saveCustomer(customer);
+    }
+
+
+
+//    @DeleteMapping("/customers/{id}")
+//    public String deleteCustomer(@PathVariable int id) {
+//        logger.info("admin deleted customer with ID " + id);
+//        customerService.deleteCustomerById(id);
+//        return "kund med id " + id + " har raderats";
+//    }
+//
+//    @DeleteMapping("/customers/{id}")
+//    public String SushideleteCustomer(@PathVariable int id) {
+//        Customer customer = customerService.findCustomerById(id);
+//
+//        if (customer == null) {
+//            return "Kund med ID " + id + " hittades inte.";
+//        }
+//
+//        Address customerAddress = customer.getAddress();
+//        int addressId = customerAddress.getId();
+//
+//        customerService.deleteCustomerById(id);
+//
+//        List<Customer> remainingCustomersWithSameAddress = customerService.findCustomersByAddressId(addressId);
+//
+//        if (remainingCustomersWithSameAddress.isEmpty()) {
+//            addressService.deleteAddressById(addressId);
+//        }
+//
+//        logger.info("Admin deleted customer with ID: " + id);
+//
+//        return "Kund med ID " + id + " har tagits bort.";
+//    }
+
+    //Tobbe
     @DeleteMapping("/customers/{id}")
     public String deleteCustomer(@PathVariable int id) {
-        logger.info("admin deleted customer with ID " + id);
-        cinemaCustomerService.deleteCustomerById(id);
-        return "kund med id " + id + " har raderats";
+        customerService.deleteCustomerById(id);
+        return ("Customer with id: " + id + " has been deleted!");
     }
 
-    @PutMapping("customers/{id}")
-    public Customer updateCustomer(@PathVariable int id, @RequestBody Customer s) {
-        logger.info("admin updated customer with ID " + id);
-        s.setId(id);
-        Customer customer = cinemaCustomerService.saveCustomer(s);
-        return customer;
-    }
+//    @PutMapping("customers/{id}")
+//    public Customer updateCustomer(@PathVariable int id, @RequestBody Customer s) {
+//        logger.info("admin updated customer with ID " + id);
+//        s.setId(id);
+//        Customer customer = customerService.saveCustomer(s);
+//        return customer;
+//    }
+
 
     @PostMapping("/movies")
     public Movie saveMovie(@RequestBody Movie movie) {
@@ -103,116 +237,7 @@ public class AdminController {
     }
 
 
-    public AdminController(CustomerService custService, AddressService addService, DishesService dishService, SushiRoomService rooService, SushiBookingService bookService, OrderService ordService){
-        sushiCustomerService = custService;
-        addressService = addService;
-        dishesService = dishService;
-        addressRoomService = rooService;
-        bookingService = bookService;
-        orderService = ordService;
-    }
 
-    @GetMapping("/customers")
-    public List<Customer> findAllCustomers() {
-        return sushiCustomerService.findAllCustomers();
-    }
-
-    @PostMapping("/customers")
-    public Customer addCustomer(@RequestBody Customer newCustomer) {
-
-        Address existingAddress = addressService.findAddressByStreetAndPostalCodeAndCity(
-                newCustomer.getAddress().getStreet(),
-                newCustomer.getAddress().getPostalCode(),
-                newCustomer.getAddress().getCity()
-        );
-
-        if (existingAddress == null) {
-            addressService.saveAddress(newCustomer.getAddress());
-        }
-
-        Address customerAddress = addressService.findAddressByStreetAndPostalCodeAndCity(
-                newCustomer.getAddress().getStreet(),
-                newCustomer.getAddress().getPostalCode(),
-                newCustomer.getAddress().getCity()
-        );
-
-        newCustomer.setAddress(customerAddress);
-
-        Customer savedCustomer = sushiCustomerService.saveCustomer(newCustomer);
-        int customerID = savedCustomer.getId();
-
-        logger.info("Admin added a new customer with ID: " + customerID);
-
-        return savedCustomer;
-    }
-
-
-    @DeleteMapping("/customers/{id}")
-    public String SushideleteCustomer(@PathVariable int id) {
-        Customer customer = sushiCustomerService.findCustomerById(id);
-
-        if (customer == null) {
-            return "Kund med ID " + id + " hittades inte.";
-        }
-
-        Address customerAddress = customer.getAddress();
-        int addressId = customerAddress.getId();
-
-        sushiCustomerService.deleteCustomerById(id);
-
-        List<Customer> remainingCustomersWithSameAddress = sushiCustomerService.findCustomersByAddressId(addressId);
-
-        if (remainingCustomersWithSameAddress.isEmpty()) {
-            addressService.deleteAddressById(addressId);
-        }
-
-        logger.info("Admin deleted customer with ID: " + id);
-
-        return "Kund med ID " + id + " har tagits bort.";
-    }
-
-    @PutMapping("/customers/{id}")
-    public ResponseEntity<String> updateCustomer(@RequestBody Customer updatedCustomer, @PathVariable int id) {
-        Customer existingCustomer = sushiCustomerService.findCustomerById(id);
-        if (existingCustomer == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Kund med ID: " + id + " finns inte");
-        }
-
-        existingCustomer.setUsername(updatedCustomer.getUsername());
-        existingCustomer.setName(updatedCustomer.getName());
-
-        Address updatedAddress = updatedCustomer.getAddress();
-        Address existingAddress = existingCustomer.getAddress();
-
-        if (existingAddress != null && !existingAddress.equals(updatedAddress)) {
-            Address matchingAddress = addressService.findAddressByStreetAndPostalCodeAndCity(
-                    updatedAddress.getStreet(), updatedAddress.getPostalCode(), updatedAddress.getCity()
-            );
-
-            if (matchingAddress != null) {
-                existingCustomer.setAddress(matchingAddress);
-            } else {
-                existingAddress.setStreet(updatedAddress.getStreet());
-                existingAddress.setPostalCode(updatedAddress.getPostalCode());
-                existingAddress.setCity(updatedAddress.getCity());
-            }
-        } else if (existingAddress == null) {
-            Address newAddress = addressService.saveAddress(updatedAddress);
-            existingCustomer.setAddress(newAddress);
-        }
-
-        Customer updatedCustomerResult = sushiCustomerService.saveCustomer(existingCustomer);
-
-        if (existingAddress != null) {
-            List<Customer> customersWithSameAddress = sushiCustomerService.findCustomersByAddressId(existingAddress.getId());
-            if (customersWithSameAddress.size() == 0) {
-                addressService.deleteAddressById(existingAddress.getId());
-            }
-        }
-        logger.info("Admin updated customer with ID: " + id);
-        return ResponseEntity.ok("Kund med ID: " + id + " har uppdaterats.");
-    }
 
     @PostMapping("/sushis")
     public Dishes addDish(@RequestBody Dishes dish) {
@@ -280,7 +305,7 @@ public class AdminController {
         existingRoom.setDescription(updatedRoom.getDescription());
         existingRoom.setMaxGuests(updatedRoom.getMaxGuests());
 
-        SushiRoom updated = addressRoomService.updateRoom(existingRoom, id);
+        SushiRoom updated = sushiRoomService.updateRoom(existingRoom, id);
 
         if (updated != null) {
             logger.info("Admin updated room with ID: " + id);
