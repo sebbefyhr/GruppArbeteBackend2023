@@ -1,6 +1,7 @@
 package com.Grupparbete.API.Service;
 
 import com.Grupparbete.API.DAO.McBookingRepository;
+import com.Grupparbete.API.DAO.MotorcycleRepository;
 import com.Grupparbete.API.Entities.Customer;
 import com.Grupparbete.API.Entities.McBooking;
 import com.Grupparbete.API.Entities.Motorcycle;
