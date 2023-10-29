@@ -1,6 +1,7 @@
 package com.Grupparbete.API.Service;
 
 import com.Grupparbete.API.DAO.McBookingRepository;
+import com.Grupparbete.API.DAO.McCustomerRepository;
 import com.Grupparbete.API.DAO.MotorcycleRepository;
 import com.Grupparbete.API.Entities.Customer;
 import com.Grupparbete.API.Entities.McBooking;
@@ -15,12 +16,12 @@ import java.util.Optional;
 @Service
 public class McAdminServiceImpl implements McAdminServiceRepository{
 
-    private CustomerRepository customerRepository;
+    private McCustomerRepository customerRepository;
     private MotorcycleRepository motorcycleRepository;
     private McBookingRepository bookingRepository;
 
     @Autowired
-    public AdminServiceImpl(CustomerRepository customerRepository, MotorcycleRepository motorcycleRepository, McBookingRepository bookingRepository) {
+    public McAdminServiceImpl(McCustomerRepository customerRepository, MotorcycleRepository motorcycleRepository, McBookingRepository bookingRepository) {
         this.customerRepository = customerRepository;
         this.motorcycleRepository = motorcycleRepository;
         this.bookingRepository = bookingRepository;
@@ -80,6 +81,4 @@ public class McAdminServiceImpl implements McAdminServiceRepository{
     public McBooking findById(int id) {
         return bookingRepository.findBookingById(id);
     }
-}
-
 }
