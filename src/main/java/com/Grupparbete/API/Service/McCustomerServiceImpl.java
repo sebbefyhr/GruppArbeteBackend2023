@@ -3,6 +3,7 @@ package com.Grupparbete.API.Service;
 import com.Grupparbete.API.DAO.McBookingRepository;
 import com.Grupparbete.API.DAO.McCustomerRepository;
 import com.Grupparbete.API.DAO.MotorcycleRepository;
+import com.Grupparbete.API.Entities.Customer;
 import com.Grupparbete.API.Entities.McBooking;
 import com.Grupparbete.API.Entities.Motorcycle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,15 +15,16 @@ import java.util.Optional;
 public class McCustomerServiceImpl implements McCustomerServiceRepository {
 
     private MotorcycleRepository motorcycleRepository;
-    private McBookingRepository bookingRepository;
-    private McCustomerRepository customerRepository;
+    private McBookingRepository mcBookingRepository;
+    private McCustomerRepository mcCustomerRepository;
 
     @Autowired
-    public McCustomerServiceImpl (MotorcycleRepository mcr, McBookingRepository bookingRepository, McCustomerRepository customerRepository){
+    public McCustomerServiceImpl (MotorcycleRepository mcr, McBookingRepository mcBookingRepository, McCustomerRepository mcCustomerRepository){
         this.motorcycleRepository = mcr;
-        this.bookingRepository = bookingRepository;
-        this.customerRepository = customerRepository;
+        this.mcBookingRepository = mcBookingRepository;
+        this.mcCustomerRepository = mcCustomerRepository;
     }
+
     @Override
     public List<Motorcycle> findAllAvailableMcs() {
         return motorcycleRepository.findMotorcyclesByRentedIsFalse();
@@ -31,29 +33,29 @@ public class McCustomerServiceImpl implements McCustomerServiceRepository {
 
     @Override
     public List<McBooking> findAllBookingsByBikeId(int id, LocalDate tomorrow) {
-        List<McBooking> list = bookingRepository.findBookingsByMc_IdAndStartDateIsBefore(id, tomorrow);
+        List<McBooking> list = mcBookingRepository.findBookingsByMc_IdAndStartDateIsBefore(id, tomorrow);
         return list;
     }
 
     @Override
     public McBooking save(McBooking mcBooking){
-        return bookingRepository.save(mcBooking);
+        return mcBookingRepository.save(mcBooking);
     }
 
     @Override
     public Optional<McBooking> findBookingById(int id){
-        return bookingRepository.findById(id);
+        return mcBookingRepository.findById(id);
     }
 
     @Override
     public List<McBooking> findAllBookings(){
-        return bookingRepository.findAll();
+        return mcBookingRepository.findAll();
     }
 
 
     @Override
     public Optional<Customer> findCustomerByEmail(String email) {
-        return customerRepository.findCustomerByEmail(email);
+        return mcCustomerRepository.findCustomerByEmail(email);
     }
 
     @Override
