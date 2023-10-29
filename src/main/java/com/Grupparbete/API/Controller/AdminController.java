@@ -3,6 +3,9 @@ package com.Grupparbete.API.Controller;
 import com.Grupparbete.API.CurrencyConverter;
 import com.Grupparbete.API.Entities.*;
 import com.Grupparbete.API.Service.*;
+import com.Grupparbete.API.exception.McBookingNotFoundException;
+import com.Grupparbete.API.exception.McCustomerNotFoundException;
+import com.Grupparbete.API.exception.MotorcycleNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -36,15 +40,21 @@ public class AdminController {
     private SushiRoomService sushiRoomService;
     private SushiBookingService bookingService;
     private OrderService orderService;
+    private McAdminServiceRepository mcAdminServiceRepository;
 
 
-    public AdminController(CustomerService custService, AddressService addService, DishesService dishService, SushiRoomService rooService, SushiBookingService bookService, OrderService ordService){
+    @Autowired
+    public AdminController(CustomerService custService, AddressService addService,
+                           DishesService dishService, SushiRoomService rooService,
+                           SushiBookingService bookService, OrderService ordService,
+                           McAdminServiceRepository mcAdminServiceRepository){
         customerService = custService;
         addressService = addService;
         dishesService = dishService;
         sushiRoomService = rooService;
         bookingService = bookService;
         orderService = ordService;
+        this.mcAdminServiceRepository = mcAdminServiceRepository;
     }
 
     @GetMapping("/customers")
@@ -320,4 +330,93 @@ public class AdminController {
         List<Dishes> dishes = dishesService.findAllDishes();
         return dishes;
     }
+
+    //sebbe
+    @GetMapping("/allBikes")
+    public List<Motorcycle> getAllBikes(){
+        return mcAdminServiceRepository.getAllBikes();
+    }
+
+    //sebbe
+    @PutMapping("/bike/{id}")
+    public Motorcycle updateMC(@RequestBody Motorcycle mc, @PathVariable int id){
+
+        Optional<Motorcycle> bike = mcAdminServiceRepository.findBikeById(id);
+
+        if(!bike.isPresent()){
+            logger.error("Mc med id: " + id + " finns inte i databasen.");
+            throw new MotorcycleNotFoundException("Bike with ID is not found");
+        }
+
+        mc.setId(id);
+        logger.info("Admin uppdaterade mc: " + mc.getId() + " " + mc.getBrand() +" " + mc.getModel());
+        return mcAdminServiceRepository.save(mc);
+    }
+
+    //sebbe
+    @DeleteMapping("/bookings/{id}")
+    public String deleteBooking(@PathVariable int id){
+        Optional<McBooking> booking  = mcAdminServiceRepository.findBookingById(id);
+
+        if(!booking.isPresent()){
+            logger.error("Ingen bokning med id: " + id + " hittades i vårat system");
+            throw new McBookingNotFoundException("No Booking with this reference was found, please check again.");
+        }
+
+        McBooking b = mcAdminServiceRepository.findById(id);
+        Motorcycle mc = b.getMc();
+        mc.setRented(false);
+        mcAdminServiceRepository.deleteBookingById(id);
+
+        logger.info("Admin tog bort bokning med nummer: " + b.getId());
+        return "Bokningen har tagits bort.";
+    }
+
+    //sebbe
+    @PostMapping("/bike")
+    public Motorcycle addMC(@RequestBody Motorcycle mc){
+
+        mc.setId(0);
+        logger.info("Admin la till en ny MC: " + mc.getBrand() + " " + mc.getModel());
+        return mcAdminServiceRepository.save(mc);
+    }
+
+    //sebbe
+    @PutMapping("/customers/{id}")
+    public Customer updateCustomer(@PathVariable int id, @RequestBody Customer customer){
+        Optional<Customer> c = mcAdminServiceRepository.findCustomerById(id);
+        if(!c.isPresent()){
+            logger.error("Kund med id: " + id + " finns inte i databasen.");
+            throw new McCustomerNotFoundException("We cant find a customer with this id in our database");
+        }
+        customer.setCustomerId(id);
+        logger.info("Admin uppdaterade kund: " + customer.getCustomerId() +", "  + customer.getFirstName() + " " + customer.getLastName());
+        return mcAdminServiceRepository.save(customer);
+    }
+
+    //sebbe
+    @DeleteMapping("/customers/{id}")
+    public String deleteCustomer(@PathVariable int id){
+        Optional<Customer> customer = mcAdminServiceRepository.findCustomerById(id);
+        if(customer.isEmpty()){
+            logger.error("Kund med id: " + id + " finns inte i databasen.");
+            throw new McCustomerNotFoundException("Customer with the id is not found in the database");
+        }
+        logger.info("Admin tog bort kund med id: " + id);
+        return mcAdminServiceRepository.deleteCustomerById(id);
+    }
+    //sebbe
+    @PostMapping("/customers")
+    public Customer addCustomer(@RequestBody Customer customer){
+
+        customer.setCustomerId(0);
+        logger.info("Admin la till ny kund: " + customer.toString());
+        return mcAdminServiceRepository.save(customer);
+    }
+    //sebbe
+    @GetMapping("/customers")
+    public List<Customer> getAllCustomers(){
+        return mcAdminServiceRepository.getAllCustomers();
+    }
+
 }
